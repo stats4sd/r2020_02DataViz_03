@@ -1,0 +1,207 @@
+---
+title: "Making Graphs in R Using ggplot2: Part 3"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+    df_print: default
+runtime: shiny_prerendered
+description: >
+  Learn about the basic syntax of R.
+---
+
+
+```{r setup, include=FALSE}
+library(learnr)
+library(ggplot2)
+tutorial_options(exercise.timelimit = 10)
+Pulse<-readRDS("Pulse.RDS")
+
+```
+
+## Facets
+
+[EMBED VIDEO 3]
+
+We've seen how to add variables to a plot using aesthetics. Another way, for categorical variables, is to split your plot into facets, which are subplots that each display one subset of the data. For example, if we take the boxplots we made earlier, with income by age group on the log10 scale, we can use `facet_wrap` to split this plot into two panels by gender.
+
+```{r facet1, exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,fill=AgeGrp)) + 
+  geom_boxplot()+
+    scale_y_log10()+
+    facet_wrap(~Gender)
+```
+
+Be careful not to miss the `~` before `Gender`. This is used to define a formula in R. e.g. something like "y=x" in R terms is coded as `y~x`. Within `facet_wrap` the `y` is implicit (it is essentially the graph specification). The `~` tells it to make different panels based on each unique value of x (in this case - gender). It's used in many R functions, and you'll see this more later in the course.
+
+There are two main faceting functions in R, as well as `facet_wrap` there is also `facet_grid` which lets us split by multiple variables in a table like way - where one variable appears as rows in the output and the other appears as columns. In `facet_grid` we specify the row factor first before the `~` and then column factor after. So to create facets with Political party in rows and gender in columns you would code like this.
+
+```{r facet2, exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,fill=AgeGrp)) + 
+  geom_boxplot()+
+    scale_y_log10()+
+    facet_grid(PoliticalParty~Gender)
+```
+
+Always consider exactly which variables would make sense in which position of your plot. For example, the way we have orientated the graph above will allow us to make comparisons about age differences within the subgroups of gender and political party. But if we were more interested in trying to identify if there was a difference between the incomes of supporters of different political parties we would probably want to use political party on the x axis, and set the panels based on age group and gender.
+
+**QUESTION:Modify the previous example, so that political party is on the x axis, and we use facets for gender and age group.**
+
+```{r facet3, exercise=TRUE}
+
+```
+
+```{r facet3-solution}
+#Remember to change the fill aesthetic as well as the x aesthetic
+#I also moved gender to make up the rows and age group to make the columns, as my boxes were being squashed too much otherwise
+#This does mean that the x axis labels are now illegible though!
+#However the colour coding means that we can easily distinguish the parties without the x axis labels anyway
+#We will learn how to remove, or modify, those x axis labels in the next section about themes
+
+ggplot(data = Pulse,  aes(y = Income,x=PoliticalParty,fill=PoliticalParty)) + 
+  geom_boxplot()+
+    scale_y_log10()+
+    facet_grid(Gender~AgeGrp)
+```
+
+
+## Themes
+
+Themes refers to styling of the non data elements of your plot. So the label fonts, colours and sizes, the titles, and the background lines and boxes. ggplot2 has a huge number of theme options that allows you to control almost every aspect of your plot which becomes important when you want to present or publish your graphs. It's worth knowing how to find the options you are looking for when customising the themes - there are too many different things to remember! A lot of different examples are shown through the ggplot2 site <a href="https://ggplot2.tidyverse.org/reference/theme.html" target="_blank">here</a>.
+
+
+For example, lets say that I want to make my x axis labels gigantic for some reason. We need to use the argument `axis.text.x` and then, because this is a text component we use the function `element_text` to customise the appearance of this text. The `element` functions exist so that we can customise the components relating to specific types of element - `element_text`, `element_line`,`element_rect` (for 'rectangles' or boxes) are the most commonly used. 
+
+
+```{r sixe20, exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,fill=AgeGrp)) + 
+  geom_boxplot()+
+    scale_y_log10()+
+    facet_grid(PoliticalParty~Gender)+
+    theme(axis.text.x = element_text(size=20))
+```
+
+This is probably a little bit too big!
+
+**QUESTION Using some trial and error set a more sensible value for the font size. Also look into the reference link see if you can work out how to make the x axis text appear in bold**
+
+```{r boldsize, exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,fill=AgeGrp)) + 
+  geom_boxplot()+
+    scale_y_log10()+
+    facet_grid(PoliticalParty~Gender)+
+    theme(axis.text.x = element_text(size=20))
+```
+
+```{r boldsize-solution}
+#face=1 is normal, face=2 is bold, face=3 is italic
+
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,fill=AgeGrp)) + 
+  geom_boxplot()+
+    scale_y_log10()+
+    facet_grid(PoliticalParty~Gender)+
+    theme(axis.text.x = element_text(size=6,face = 2))
+```
+
+`element_blank` is also worth knowing about, as this removes elements completely. So for example, if we do not want any axis labels, because we have the colour legend providing the same information, we can set `axis.text.x` to be an `element_blank`
+
+```{r boldsize2, exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,fill=AgeGrp)) + 
+  geom_boxplot()+
+    scale_y_log10()+
+    facet_grid(PoliticalParty~Gender)+
+    theme(axis.text.x = element_blank())
+```
+
+If we want to get rid of the legend, instead of the axis labels, this is also possible. Although we can do this by setting all of the components of the legend within `theme` to be equal to blank elements, there is a quicker shortcut by using the argument `show.legend=FALSE` within the geometry function.
+
+```{r boldsize3, exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,fill=AgeGrp)) + 
+  geom_boxplot(show.legend = FALSE)+
+    scale_y_log10()+
+    facet_grid(PoliticalParty~Gender)
+```
+
+## Labels  
+
+Adding additional titles and labels to the plots is easy. The function labs() lets us add add or modify labels to anything which we have included as an aesthetic or to the title, subtitle or caption. Like so:
+
+```{r labels1,exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,fill=AgeGrp)) + 
+  geom_boxplot()+
+    scale_y_log10()+
+    facet_grid(PoliticalParty~Gender)+
+      theme(axis.text.x = element_blank())+
+        labs(title="Boxplots of Income by Age Group",
+              subtitle = "Split by political party and gender",
+                caption="Data from June 2018",
+                    x="Age Group",
+                    fill="Age Group",
+                      y="Annual Income")
+```
+
+Inside the quotation marks we can write literally anything and it will appear on the plot. Remember that we are labeling aesthetics in the `labs` function - so we need to repeat the "Age Group" label for `x` and `fill` even though we are using the same variable here.
+
+**QUESTION - Combine everything you have learnt across all the sections of this tutorial into a plot which investigates if there is a difference in approval of Donald Trump across age groups, and whether this varies by gender. Pick sensible aesthetic mapping and geometries for those variables, make sure you bring in some colour, and also incorporate a faceting variable. Finish off by customising the appearance and labeling all of the relevant axes and aesthetics.**
+```{r addlabels, exercise=TRUE}
+
+```
+
+```{r addlabels-solution, exercise=TRUE}
+#Not the only possible solution, but here is what I came up with!
+
+ggplot(data = Pulse,  aes(y=AgeGrp,fill=ApproveTrump)) + 
+  geom_bar()+
+    facet_wrap(~Gender)+
+        labs(title="Barcharts of Approval of Donald Trump by Age and Gender",
+              subtitle = "Split by Education",
+                caption="Data from June 2018",
+                    x="Count",
+                    fill="Approval of Donald Trump",
+                      y="Age Group")+
+      scale_fill_brewer(palette="Set1")+
+      theme_light()
+
+```
+
+
+
+## Appendix: 'Pulse' dataset 
+
+The data we are using in this session is an extract of a survey conducted in the US in June 2018, as part of the Pulse of the Nation series of surveys. This survey was a representative sample of the American population. You can read more about the survey (and others from the same series) <a href="https://thepulseofthenation.com" target="_blank">here</a>. The data has been cleaned and edited slightly for use in this course.
+
+The dataset contains an extract of 356 responses to 10 of the survey questions, and has been imported to R as a data frame called `Pulse`.
+
+A summary of the columns in the dataset is below.
+
+```{r, echo=FALSE,message=FALSE,warning=FALSE}
+library(tidyverse)
+library(knitr)
+
+data.frame(Column=c("Gender","Age","AgeGrp","Race","Income","Education","PoliticalParty","PoliticalView","ApproveTrump","Attractiveness"),
+           Description=c("What gender do you identify with?","What is your age?","Age range","What is your race?",
+                         "About how much money do you make per year? (USD)","What is your highest level of education?",
+                         "In politics today, do you consider yourself a Democrat, a Republican, or Independent?",
+                         "Would you say you are liberal, conservative, or moderate?",
+                         "Do you approve, disapprove, or neither approve nor disapprove of how Donald Trump is handling his job as president?",
+                        "On a scale of 1-10, how physically attractive do you consider yourself?")) %>% kable()
+
+```
+
+
+
+## Appendix: Useful reference links  
+
+R Graphics Cookbook: <a href="http://www.cookbook-r.com/Graphs/" target="_blank">http://www.cookbook-r.com/Graphs/</a> 
+
+ggplot2 CheatSheet:<a href="https://rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf" target="_blank">https://rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf   </a>  
+
+R Color Chart: <a href="http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf" target="_blank">http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf     </a>   
+
+ggplot2 manuals (warning - technical and slightly pretentious. First line "ggplot2... embodies a deep philosophy of visualisation"): <a href="https://ggplot2.tidyverse.org/" target="_blank">https://ggplot2.tidyverse.org/     </a>     
+
+Plotting with ggplot - Roger Peng videos:
+<a href="https://www.youtube.com/watch?v=HeqHMM4ziXA" target="_blank">Part 1    </a>  
+<a href="https://www.youtube.com/watch?v=n8kYa9vu1l8" target="_blank">Part 2 </a>  
+
+
