@@ -21,7 +21,7 @@ Pulse<-readRDS("Pulse.RDS")
 
 ## Facets
 
-[EMBED VIDEO 3]
+![](https://youtu.be/VAsRe33lkCM)
 
 We've seen how to add variables to a plot using aesthetics. Another way, for categorical variables, is to split your plot into facets, which are subplots that each display one subset of the data. For example, if we take the boxplots we made earlier, with income by age group on the log10 scale, we can use `facet_wrap` to split this plot into two panels by gender.
 
